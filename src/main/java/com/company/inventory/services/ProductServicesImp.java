@@ -8,13 +8,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.company.inventory.dao.ICategoryDao;
 import com.company.inventory.dao.IProductDao;
 import com.company.inventory.model.Category;
 import com.company.inventory.model.Product;
+import com.company.inventory.response.CategoryResponseRest;
 import com.company.inventory.response.ProductResponseRest;
 import com.company.inventory.response.ResponseRest;
+import com.company.inventory.util.Util;
 
 @Service
 public class ProductServicesImp implements IProductService {
@@ -64,6 +67,44 @@ public class ProductServicesImp implements IProductService {
 		}catch (Exception e) {
 			e.getStackTrace();
 			response.setMetadata("respuesta nok", "-1", "Error al guardar producto");
+			return new ResponseEntity<ProductResponseRest>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		
+		return new ResponseEntity<ProductResponseRest>(response, HttpStatus.OK);
+	}
+
+
+	@Override
+	@Transactional (readOnly = true)
+	public ResponseEntity<ProductResponseRest> searchById(Long id) {
+		ProductResponseRest response = new ProductResponseRest();
+		List<Product> list = new ArrayList<>();
+		
+		
+		try {
+			//search product by id database.
+			Optional<Product> product = productDao.findById(id);
+			
+			if(product.isPresent()) {
+				
+				//DECODE IMAGE BYTE IN BASE64
+				byte [] imageDescompressed = Util.decompressZLib(product.get().getPicture());
+				product.get().setPicture(imageDescompressed);
+				///AGREGAR A LA LISTA
+				list.add(product.get());
+				
+				//RESPUESTA
+				response.getProductResponse().setProducts(list);
+				response.setMetadata("Respuesta ok", "00", "Respuesta exitosa");
+			}else {
+				response.setMetadata("Respuesta nok", "-1", "Producto no encontrada");
+				return new ResponseEntity<ProductResponseRest>(response, HttpStatus.NOT_FOUND);
+			}
+			
+			
+		}catch(Exception e) {
+			response.setMetadata("Respuesta nok", "-1", "Error al consultar");
+			e.getStackTrace();
 			return new ResponseEntity<ProductResponseRest>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
