@@ -50,6 +50,20 @@
 			<optional>true</optional>
 		</dependency>
 		
+		<!--POI-->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>5.2.2</version>
+		</dependency>
+		
+		<!--POI ^ EXCEL 2007 -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>5.2.2</version>
+		</dependency>
+		
 	</dependencies>
 
 	<build>
